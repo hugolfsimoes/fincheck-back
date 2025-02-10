@@ -8,6 +8,7 @@ import { CreateTransactionDto } from '../dto/create-transaction.dto';
 import { UpdateTransactionDto } from '../dto/update-transaction.dto';
 import { ValidadeCategoryOwnershipService } from 'src/modules/categories/services/validate-category-ownership.service';
 import { ValidadeTransactionOwnershipService } from './validate-transaction-ownership.service';
+import { TransactionType } from '../entities/Transaction';
 
 @Injectable()
 export class TransactionsService {
@@ -24,10 +25,17 @@ export class TransactionsService {
     return this.transactionsRepo.create({ data: { userId, bankAccountId, categoryId, date, name, type, value } });
   }
 
-  findAllByUserId(userId: string) {
+  findAllByUserId(userId: string, filters: { month: number, year: number, bankAccountId?: string, type?: TransactionType; }) {
     return this.transactionsRepo.findMany({
       where: {
         userId,
+        bankAccountId: filters.bankAccountId,
+        type: filters.type,
+        date: {
+          gte: new Date(Date.UTC(filters.year, filters.month)),
+          lt: new Date(Date.UTC(filters.year, filters.month + 1))
+        },
+
       },
     });
   }
